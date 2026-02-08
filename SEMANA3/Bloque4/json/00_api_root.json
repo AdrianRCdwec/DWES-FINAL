@@ -1,0 +1,1 @@
+{"peliculas":"http://localhost:8000/api/peliculas/","categorias":"http://localhost:8000/api/categorias/","etiquetas":"http://localhost:8000/api/etiquetas/","resenas":"http://localhost:8000/api/resenas/","perfiles":"http://localhost:8000/api/perfiles/"}
