@@ -1,42 +1,31 @@
-from rest_framework.viewsets import ModelViewSet
-from .models import Pelicula, Categoria
-from .serializers import PeliculaSerializer, PeliculaCreateSerializer, CategoriaSerializer
+from rest_framework import viewsets
 
-from django.shortcuts import get_object_or_404
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
+from .models import Pelicula, Categoria, Etiqueta, Resena, Perfil
+from .serializers import (
+    PeliculaSerializer,
+    CategoriaSerializer,
+    EtiquetaSerializer,
+    ResenaSerializer,
+    PerfilSerializer,
+)
 
-class PeliculaListAPIView(APIView):
-    def get(self, request):
-        peliculas = Pelicula.objects.all()
-        serializer = PeliculaSerializer(peliculas, many=True)
-        return Response(serializer.data)
-
-    def post(self, request):
-        serializer = PeliculaCreateSerializer(data=request.data)
-        if serializer.is_valid():
-            pelicula = serializer.save()
-            return Response(PeliculaSerializer(pelicula).data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class PeliculaDetailAPIView(APIView):
-    def get(self, request, pk):
-        pelicula = get_object_or_404(Pelicula, pk=pk)
-        serializer = PeliculaSerializer(pelicula)
-        return Response(serializer.data)
-
-class PeliculaViewSet(ModelViewSet):
+class PeliculaViewSet(viewsets.ModelViewSet):
     queryset = Pelicula.objects.all()
+    serializer_class = PeliculaSerializer
 
-    def get_serializer_class(self):
-        # En GET usamos el de lectura; en POST/PUT/PATCH el de escritura
-        if self.action in ("list", "retrieve"):
-            return PeliculaSerializer
-        return PeliculaCreateSerializer
-
-
-class CategoriaViewSet(ModelViewSet):
+class CategoriaViewSet(viewsets.ModelViewSet):
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
+
+class EtiquetaViewSet(viewsets.ModelViewSet):
+    queryset = Etiqueta.objects.all()
+    serializer_class = EtiquetaSerializer
+
+class ResenaViewSet(viewsets.ModelViewSet):
+    queryset = Resena.objects.all()
+    serializer_class = ResenaSerializer
+
+class PerfilViewSet(viewsets.ModelViewSet):
+    queryset = Perfil.objects.all()
+    serializer_class = PerfilSerializer
+
