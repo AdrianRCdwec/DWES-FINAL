@@ -1,6 +1,7 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.db import IntegrityError
 from .filters import PeliculaFilter
 from .models import Pelicula, Categoria, Etiqueta, Resena, Perfil
 from .serializers import (
@@ -28,7 +29,7 @@ class PeliculaViewSet(viewsets.ModelViewSet):
     ordering_fields = ["titulo", "fecha_estreno", "duracion"]  # ejemplo
     ordering = ["titulo"]  # orden por defecto
     
-    @action(detail=True, methods=['post'])  # quito permission_classes por ahora (opcional)
+    @action(detail=True, methods=['post'])
     def valorar(self, request, pk=None):
         pelicula = self.get_object()
         
@@ -39,23 +40,33 @@ class PeliculaViewSet(viewsets.ModelViewSet):
         puntuacion = serializer.validated_data['puntuacion']
         comentario = serializer.validated_data.get('comentario', '')
         
-        # Lógica de negocio: get_or_create en Resena (through)
-        resena, creada = Resena.objects.get_or_create(
-            pelicula=pelicula,
-            usuario_id=usuario_id,
-            defaults={'puntuacion': puntuacion, 'comentario': comentario}
-        )
-        
-        if not creada:
+        try:
+            resena, creada = Resena.objects.get_or_create(
+                pelicula=pelicula,
+                usuario_id=usuario_id,
+                defaults={'puntuacion': puntuacion, 'comentario': comentario}
+            )
+            
+            if not creada:
+                return Response(
+                    {"error": "Ya has valorado esta película"},
+                    status=status.HTTP_409_CONFLICT
+                )
+            
+            return Response(
+                {"mensaje": "Película valorada correctamente", "resena_id": resena.id},
+                status=status.HTTP_201_CREATED
+            )
+        except IntegrityError:
             return Response(
                 {"error": "Ya has valorado esta película"},
                 status=status.HTTP_409_CONFLICT
             )
-        
-        return Response(
-            {"mensaje": "Película valorada correctamente", "resena_id": resena.id},
-            status=status.HTTP_201_CREATED
-        )
+        except Exception as e:
+            return Response(
+                {"error": f"Error al crear reseña: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class CategoriaViewSet(viewsets.ModelViewSet):
