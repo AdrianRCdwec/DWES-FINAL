@@ -1,6 +1,5 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-
 from .views import (
     PeliculaViewSet,
     CategoriaViewSet,
@@ -10,13 +9,11 @@ from .views import (
 )
 
 router = DefaultRouter()
-router.register(r'peliculas', PeliculaViewSet, basename='pelicula')
-router.register(r'categorias', CategoriaViewSet, basename='categoria')
-router.register(r'etiquetas', EtiquetaViewSet, basename='etiqueta')
-router.register(r'resenas', ResenaViewSet, basename='resena')
-router.register(r'perfiles', PerfilViewSet, basename='perfil')
+router.register(r'peliculas', PeliculaViewSet)
+router.register(r'categorias', CategoriaViewSet)
+router.register(r'etiquetas', EtiquetaViewSet)
+router.register(r'resenas', ResenaViewSet)
+router.register(r'perfiles', PerfilViewSet)
 
-urlpatterns = [
-    path('', include(router.urls)),
-]
+urlpatterns = router.urls
 
