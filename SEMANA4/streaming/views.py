@@ -1,4 +1,5 @@
 from rest_framework import viewsets, status
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import IntegrityError
@@ -16,23 +17,25 @@ from .serializers import (
 class PeliculaViewSet(viewsets.ModelViewSet):
     queryset = Pelicula.objects.all()
     serializer_class = PeliculaSerializer
-    
     filterset_class = PeliculaFilter
+    filterset_fields = ["categoria"]
+    search_fields = ["titulo", "descripcion"]
+    ordering_fields = ["titulo", "fecha_estreno", "duracion"]
+    ordering = ["titulo"]
     
-    # Filtros simples (elige campos que existan en tu modelo):
-    filterset_fields = ["categoria"]  # ejemplo FK
+    def get_permissions(self):
+        """
+        PUBLICO: GET list/retrieve (ver películas)
+        PRIVADO: POST/PUT/PATCH/DELETE (crear/editar/borrar)
+        """
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
-    # Búsqueda textual (elige campos de texto reales):
-    search_fields = ["titulo", "descripcion"]  # ejemplo
-
-    # Ordenación (limita campos expuestos):
-    ordering_fields = ["titulo", "fecha_estreno", "duracion"]  # ejemplo
-    ordering = ["titulo"]  # orden por defecto
-    
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def valorar(self, request, pk=None):
+        # ... tu código existente del Bloque 6
         pelicula = self.get_object()
-        
         serializer = ValorarPeliculaSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
@@ -61,11 +64,6 @@ class PeliculaViewSet(viewsets.ModelViewSet):
             return Response(
                 {"error": "Ya has valorado esta película"},
                 status=status.HTTP_409_CONFLICT
-            )
-        except Exception as e:
-            return Response(
-                {"error": f"Error al crear reseña: {str(e)}"},
-                status=status.HTTP_400_BAD_REQUEST
             )
 
 
