@@ -12,6 +12,11 @@ from .models import (
 # Si has añadido FichaTecnica en models.py, descomenta estas líneas:
 # from .models import FichaTecnica
 
+class ValorarPeliculaSerializer(serializers.Serializer):
+    usuario_id = serializers.IntegerField()
+    puntuacion = serializers.IntegerField(min_value=1, max_value=10)
+    comentario = serializers.CharField(max_length=500, required=False, allow_blank=True)
+
 
 class CategoriaSerializer(serializers.ModelSerializer):
     class Meta:
